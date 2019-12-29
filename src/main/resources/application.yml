@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: TestRabbitWebservice
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      max-file-size: 1MB
+      max-request-size: 215MB
+  rabbitmq:
+    host: localhost
+    port: 32769
+    username: gosblo
+    password: password
+    listener:
+      simple:
+        missing-queues-fatal: true
+    virtual-host: asterix
+
+
+server:
+  port: 8086
+
+logging:
+  level:
+    ROOT: info
+    org.springframework.amqp.rabbit: debug
