@@ -8,15 +8,14 @@ spring:
       max-file-size: 1MB
       max-request-size: 215MB
   rabbitmq:
-    host: localhost
+    host: AspergersiMac2.lan
     port: 32769
     username: gosblo
     password: password
     listener:
       simple:
         missing-queues-fatal: true
-    virtual-host: asterix
-
+#    virtual-host: asterix
 
 server:
   port: 8086

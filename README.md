@@ -31,19 +31,47 @@ ___
 This utility is invoked by a HTTP POST request with the http request paramaters specifing the queue names to send the message to.
 Place a Json payload that is to be sent, within the HTTP Post request
 
-### Sending a request and wait for a response
+### Using a specific queue
+
+#### Sending a request and wait for a response
+```
 http://localhost:8086/rabbit/send?writeQueueName=yourRequestQueue&receiveQueueName=yourResponseQueue
+```
 
-### Sending without expecting a response
+#### Sending without expecting a response
+```
 http://localhost:8086/rabbit/write?queueName=yourqueue
+```
 
-### Monitoring and logging all responses on a queue
+#### Monitoring and logging all responses on a queue
+```
 http://localhost:8086/rabbit/monitor?queueName=yourqueue
+```
 
-### Uploading files
-http://localhost:8086/rabbit/upload?queueName=mytestq[&mode=text|fixed-binary][&len=choplength]
+#### Uploading files to a queue
+```angular2html
+http://localhost:8086/rabbit/uploadtoqueue?queueName=mytestq[&mode=text|fixed-binary][&len=choplength]
+```
 
 queueName is the rabbitMq name to send to.
+
+text is the default mode.
+
+fixed-binary is for fixed-length binary files.
+
+len is only required for fixed-binary as it specifies the choplength.
+
+content-type must be "multipart/form-data" for binary mode, and text file processing mode.
+
+content-type must be "application/json" to treat the file as a single Json record.
+
+#### Uploading files to an exchange
+```
+http://localhost:8086/rabbit/uploadtoexchange?exchangeName=myexchange&routingKey=myRoutingKey[&mode=text|fixed-binary][&len=choplength]
+```
+exchangeName is the rabbitMq exchange to send to.
+
+routingKey is the rabbitMq routing key pattern to send to
 
 text is the default mode.
 

@@ -61,14 +61,25 @@ public class SimpleRestController {
 //        return result;
 //    }
 
-    @PostMapping("/rabbit/write")
+    @PostMapping("/rabbit/writetoqueue")
     public ResponseEntity<Void> postToNamedQueue(
         @RequestParam(value = "queueName", required = true) String queueName,
         @RequestBody String queryIn,
         @RequestHeader HttpHeaders headers) {
 
-      template.convertAndSend(queueName, queryIn);
-      return new ResponseEntity<>(HttpStatus.OK);
+        template.convertAndSend(queueName, queryIn);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/rabbit/writetoexchange")
+    public ResponseEntity<Void> postToNamedQueue(
+        @RequestParam(value = "exchangeName", required = true) String exchangeName,
+        @RequestParam(value = "routingKey", required = true) String routingKey,
+        @RequestBody String queryIn,
+        @RequestHeader HttpHeaders headers) {
+
+        template.convertAndSend(exchangeName, routingKey, queryIn);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/monitor")
@@ -80,13 +91,23 @@ public class SimpleRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/rabbit/upload")
-    public ResponseEntity<Void>  uploadFile(@RequestParam(value = "queueName", required = true) String queueName,
+    @PostMapping("/rabbit/uploadToQueue")
+    public ResponseEntity<Void>  uploadFileToQueue(@RequestParam(value = "queueName", required = true) String queueName,
                                             @RequestParam(value = "file", required = true) MultipartFile file,
                                             @RequestParam(value = "mode", required = false, defaultValue = "text") String mode,
                                             @RequestParam(value = "len", required = false, defaultValue = "0") int len,
                                             @RequestHeader HttpHeaders headers) {
         fileDumpingService.dumpFile(queueName, Objects.requireNonNull(headers.get(HttpHeaders.CONTENT_TYPE)), mode, len, file);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @PostMapping("/rabbit/uploadToExchange")
+    public ResponseEntity<Void>  uploadFileToExchange(@RequestParam(value = "exchangeName", required = true) String exchangeName,
+                                            @RequestParam(value = "routingKey", required = true) String routingKey,
+                                            @RequestParam(value = "file", required = true) MultipartFile file,
+                                            @RequestParam(value = "mode", required = false, defaultValue = "text") String mode,
+                                            @RequestParam(value = "len", required = false, defaultValue = "0") int len,
+                                            @RequestHeader HttpHeaders headers) {
+        fileDumpingService.dumpFile(exchangeName, routingKey, Objects.requireNonNull(headers.get(HttpHeaders.CONTENT_TYPE)), mode, len, file);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
