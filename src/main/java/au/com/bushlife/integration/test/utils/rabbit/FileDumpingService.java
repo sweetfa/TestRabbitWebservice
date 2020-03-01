@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.EqualsAndHashCode
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
@@ -114,13 +115,15 @@ public class FileDumpingService {
     }
 
     @Data
+    @EqualsAndHashCode(callSuper = true)
     private class ExchangeContext extends Context {
         ExchangeContext(String exchangeName, String routingKey, String mode, int length) {
-            super(mode, length, p -> rabbitTemplate.convertAndSend(exchangeName, routingKey, p));
+            super(mode, length, p -> rabbitTemplate.convertAndSend(exchangeName.equals("amq.default") ? "" : exchangeName, routingKey, p));
         }
     }
 
     @Data
+    @EqualsAndHashCode(callSuper = true)
     private class QueueContext extends Context {
 
         QueueContext(String queueName, String mode, int length) {
