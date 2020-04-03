@@ -4,16 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>au.com.bushlife.integration.test.utils</groupId>
     <artifactId>TestRabbitWebservice</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
 
     <properties>
-        <springboot.version>2.2.1.RELEASE</springboot.version>
+        <main.class>au.com.bushlife.integration.test.utils.rabbit.Application</main.class>
+        <springboot.version>2.2.5.RELEASE</springboot.version>
         <pulsar.version>2.4.1</pulsar.version>
     </properties>
 
     <build>
+        <finalName>test-rabbit-webservice</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -93,5 +95,151 @@
             <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- Spock Testing profile -->
+        <profile>
+            <id>spockTests</id>
+            <activation>
+                <property>
+                    <name>!spockTests</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <version>1.8.1</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>compileTests</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+            <dependencies>
+                <dependency>
+                    <groupId>org.spockframework</groupId>
+                    <artifactId>spock-core</artifactId>
+                    <version>1.3-groovy-2.5</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.shazam</groupId>
+                    <artifactId>shazamcrest</artifactId>
+                    <version>0.11</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- Docker Generation Profile -->
+        <profile>
+            <id>docker</id>
+            <activation>
+                <property>
+                    <name>docker</name>
+                </property>
+            </activation>
+            <properties>
+                <repository.name>bushlife</repository.name>
+                <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-maven-plugin</artifactId>
+                            <version>${springboot.version}</version>
+                            <configuration>
+                                <mainClass>${main.class}</mainClass>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                        <goal>repackage</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <!-- Maven Dependency Plugin (has precedence over dockerfile-maven-plugin -->
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-dependency-plugin</artifactId>
+                            <version>3.1.1</version>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.apache.maven.shared</groupId>
+                                    <artifactId>maven-dependency-analyzer</artifactId>
+                                    <version>1.11.1</version>
+                                </dependency>
+                            </dependencies>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>${project.artifactId}</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>jar</type>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>unpack</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>unpack</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <!-- dockerfile-maven-plugin -->
+                        <plugin>
+                            <groupId>com.spotify</groupId>
+                            <artifactId>dockerfile-maven-plugin</artifactId>
+                            <version>${dockerfile.maven.plugin.version}</version>
+                            <configuration>
+                                <repository>${repository.name}/${project.build.finalName}</repository>
+                                <finalName>${project.build.finalName}</finalName>
+                                <tag>${project.version}</tag>
+                                <buildArgs>
+                                    <JARFILE>target/${project.build.finalName}.${project.packaging}</JARFILE>
+                                </buildArgs>
+                                <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>default</id>
+                                    <goals>
+                                        <goal>build</goal>
+                                        <goal>push</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>dockerfile-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

@@ -8,7 +8,7 @@ spring:
       max-file-size: 1MB
       max-request-size: 215MB
   rabbitmq:
-    host: AspergersiMac2.lan
+    host: Bush-Life-2020.lan
     port: 32769
     username: gosblo
     password: password
